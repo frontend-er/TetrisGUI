@@ -11,7 +11,12 @@ namespace TetrisGUI
     {
         static void Main(string[] args)
         {
+            GraphicsWindow.Width = 100;
+            GraphicsWindow.Height = 100;
 
+            GraphicsWindow.BackgroundColor = "LightBlue";
+
+            GraphicsWindow.DrawRectangle(20, 20, 5, 5);
         }
     }
 }
