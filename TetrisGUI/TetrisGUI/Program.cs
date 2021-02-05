@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Timers;
+using Microsoft.SmallBasic.Library;
 
 namespace Tetris
 {
@@ -8,37 +9,36 @@ namespace Tetris
     {
         const int TIMER_INTERVAL = 500;
         static System.Timers.Timer aTimer;
-
         static private Object _lockObject = new object(); 
-
         static FirureGenerator generator;
         static Figure currentFigure;
+        static bool  gameOver = false;
 
 
         static void Main(string[] args)
         {
-
-
             DrawerProvider.Drawer.InitField();
-
-            generator = new FirureGenerator(Field.Width/2, 0);
-            currentFigure = generator.GetNewFigure();
             SetTimer();
+            generator = new FirureGenerator(Field.Width / 2, 0);
+            currentFigure =  generator.GetNewFigure();
+            currentFigure.Draw();
+
+            GraphicsWindow.KeyDown += GraphicsWindow_KeyDown;
 
 
+            
+        }
 
-            while (true)
-                 {
-                    if (Console.KeyAvailable)
-                    {
-                        var key = Console.ReadKey();
-                        Monitor.Enter(_lockObject);
-                        var result = HandleKey(currentFigure, key.Key);
-                        ProcessResult(result, ref currentFigure);
-                        Monitor.Exit(_lockObject);
+        private static void GraphicsWindow_KeyDown()
+        {
+            Monitor.Enter(_lockObject);
+            var result = HandleKey(currentFigure, GraphicsWindow.LastKey);
 
-                }
-            }
+            if (GraphicsWindow.LastKey == "Down")
+                gameOver = ProcessResult(result, ref currentFigure);
+            
+            Monitor.Exit(_lockObject);
+
         }
 
         private static void Test()
@@ -75,7 +75,6 @@ namespace Tetris
                 if(currentFigure.IsOnTop())
                 {
                     DrawerProvider.Drawer.WriteGameOver();
-                    aTimer.Elapsed -= OnTimedEvent;
                     return true;
                 }
                 else
@@ -93,18 +92,17 @@ namespace Tetris
 
     
 
-        private static Result HandleKey(Figure currentFigure, ConsoleKey key)
+        private static Result HandleKey(Figure currentFigure, String key)
         {
             switch (key)
             {
-                case ConsoleKey.LeftArrow:
-                    return currentFigure.TryMove(Direction.Left);
-                case ConsoleKey.RightArrow:
+                case "Left":
+                   return currentFigure.TryMove(Direction.Left);
+                case "Right":
                     return currentFigure.TryMove(Direction.Right);
-                case ConsoleKey.DownArrow:
+                case "Down":
                     return currentFigure.TryMove(Direction.Down);
-   
-                case ConsoleKey.Spacebar:
+                case "Space":
                     return currentFigure.TryRotate();
 
 
